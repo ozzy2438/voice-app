@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Mic, MicOff, ChevronLeft, ChevronRight, Trash, Save, ExternalLink } from "lucide-react"
@@ -83,6 +83,27 @@ export default function VoiceNotes() {
   const [isSaving, setIsSaving] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
+  const startVisualization = useCallback(() => {
+    // startVisualization fonksiyonunun içeriği
+  }, [])
+
+  const stopVisualization = useCallback(() => {
+    // stopVisualization fonksiyonunun içeriği
+  }, [])
+
+  const animateWaveform = useCallback(() => {
+    setWaveform(prev => prev.map(() => Math.random() * 0.5 + 0.25))
+    animationFrameRef.current = requestAnimationFrame(animateWaveform)
+  }, [])
+
+  useEffect(() => {
+    if (isRecording) {
+      startVisualization()
+    } else {
+      stopVisualization()
+    }
+  }, [isRecording, startVisualization, stopVisualization])
+
   useEffect(() => {
     if (isRecording) {
       animateWaveform()
@@ -96,12 +117,7 @@ export default function VoiceNotes() {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [isRecording])
-
-  const animateWaveform = () => {
-    setWaveform(prev => prev.map(() => Math.random() * 0.5 + 0.25))
-    animationFrameRef.current = requestAnimationFrame(animateWaveform)
-  }
+  }, [isRecording, animateWaveform])
 
   const startRecording = async () => {
     try {
