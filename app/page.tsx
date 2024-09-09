@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Mic, MicOff, ChevronLeft, ChevronRight, Trash, Save, ExternalLink } from "lucide-react"
@@ -83,13 +83,13 @@ export default function VoiceNotes() {
   const [isSaving, setIsSaving] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
 
-  const startVisualization = useCallback(() => {
-    // startVisualization fonksiyonunun içeriği
-  }, [])
+  const startVisualization = () => {
+    // Gerekirse burada visualization başlatma kodunu ekleyin
+  }
 
-  const stopVisualization = useCallback(() => {
-    // stopVisualization fonksiyonunun içeriği
-  }, [])
+  const stopVisualization = () => {
+    // Gerekirse burada visualization durdurma kodunu ekleyin
+  }
 
   const animateWaveform = useCallback(() => {
     setWaveform(prev => prev.map(() => Math.random() * 0.5 + 0.25))
