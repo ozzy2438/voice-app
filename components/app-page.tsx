@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Mic, MicOff, Settings, History, Wand2 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 export function AppPage() {
   const [isRecording, setIsRecording] = useState(false)
@@ -84,7 +84,7 @@ export function AppPage() {
     if (!ctx) return
 
     if (!audioContext) {
-      const newAudioContext = new (window.AudioContext || window.webkitAudioContext)()
+      const newAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
       setAudioContext(newAudioContext)
       analyserRef.current = newAudioContext.createAnalyser()
     }
@@ -99,6 +99,7 @@ export function AppPage() {
       })
 
     function visualize() {
+      if (!canvas) return;
       const WIDTH = canvas.width
       const HEIGHT = canvas.height
 
@@ -110,8 +111,8 @@ export function AppPage() {
         ctx.clearRect(0, 0, WIDTH, HEIGHT)
 
         function draw() {
-          if (!isRecording) return
-          requestAnimationFrame(draw)
+          if (!isRecording || !ctx) return;
+          requestAnimationFrame(draw);
 
           analyserRef.current?.getByteFrequencyData(dataArray)
 

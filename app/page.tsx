@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Mic, MicOff, ChevronLeft, ChevronRight, Trash, Save, ExternalLink } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 interface Note {
   id: number;
@@ -70,7 +70,7 @@ const RealtimeTranscription = ({ transcript }: { transcript: string }) => {
 
 export default function VoiceNotes() {
   const [isRecording, setIsRecording] = useState(false)
-  const [transcript, setTranscript] = useState("")
+  const [realtimeTranscript, setRealtimeTranscript] = useState("")
   const [notes, setNotes] = useState<Note[]>([])
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [editedContent, setEditedContent] = useState("")
@@ -82,8 +82,6 @@ export default function VoiceNotes() {
   const animationFrameRef = useRef<number>()
   const [isSaving, setIsSaving] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
-  const [realtimeTranscript, setRealtimeTranscript] = useState("")
-  const [lastTranscriptChunk, setLastTranscriptChunk] = useState("")
 
   useEffect(() => {
     if (isRecording) {
@@ -118,20 +116,17 @@ export default function VoiceNotes() {
 
       mediaRecorder.current.start(1000) // Her saniye veri gönder
       setIsRecording(true)
-      setTranscript("")
       setRealtimeTranscript("")
-      setLastTranscriptChunk("")
     } catch (error) {
       console.error('Error accessing microphone:', error)
     }
   }
 
-  const stopRecording = async () => {
+  const stopRecording = () => {
     if (mediaRecorder.current) {
       mediaRecorder.current.stop()
       setIsRecording(false)
-      const audioBlob = new Blob(audioChunks.current, { type: 'audio/wav' })
-      await sendAudioToServer(audioBlob)
+      sendAudioToServer(new Blob(audioChunks.current, { type: 'audio/wav' }))
     }
   }
 
@@ -147,12 +142,7 @@ export default function VoiceNotes() {
 
       if (response.ok) {
         const data = await response.json()
-        const newTranscript = data.transcript.trim()
-        if (newTranscript && newTranscript !== lastTranscriptChunk) {
-          setLastTranscriptChunk(newTranscript)
-          setTranscript(prev => prev + " " + newTranscript)
-          setRealtimeTranscript(prev => prev + " " + newTranscript)
-        }
+        setRealtimeTranscript(prev => prev + " " + data.transcript.trim())
       } else {
         console.error('Transcription failed:', await response.text())
       }
@@ -222,41 +212,25 @@ export default function VoiceNotes() {
 
   const deleteNote = () => {
     if (selectedNote) {
-      setNotes(notes.filter(note => note.id !== selectedNote.id))
+      setNotes(prevNotes => prevNotes.filter(note => note.id !== selectedNote.id))
       closeNoteDetails()
+      setToastMessage("Not silindi")
+      setTimeout(() => setToastMessage(null), 3000)
     }
   }
 
-  const showToast = (message: string) => {
-    setToastMessage(message)
-    setTimeout(() => setToastMessage(null), 3000) // Remove toast after 3 seconds
-  }
-
-  const saveNote = async () => {
+  const saveNote = () => {
     if (selectedNote) {
       setIsSaving(true)
-      try {
-        const updatedNote = {
-          ...selectedNote,
-          content: editedContent,
-          title: noteTitle
-        }
-        
-        // Simulate an API call
-        await new Promise(resolve => setTimeout(resolve, 500))
-
-        setNotes(notes.map(note => 
-          note.id === selectedNote.id ? updatedNote : note
+      setTimeout(() => {
+        setNotes(prevNotes => prevNotes.map(note => 
+          note.id === selectedNote.id ? { ...note, title: noteTitle, content: editedContent } : note
         ))
-        
-        setSelectedNote(updatedNote)
-        showToast("Note saved successfully")
-      } catch (error) {
-        console.error('Error saving note:', error)
-        showToast("Error saving note")
-      } finally {
         setIsSaving(false)
-      }
+        closeNoteDetails()
+        setToastMessage("Not kaydedildi")
+        setTimeout(() => setToastMessage(null), 3000)
+      }, 1000)
     }
   }
 
@@ -306,13 +280,16 @@ export default function VoiceNotes() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {notes.map((note) => (
-          <Card key={note.id} className="bg-gradient-to-br from-gray-800 to-blue-900 bg-opacity-50 rounded-lg p-4 cursor-pointer" onClick={() => openNoteDetails(note)}>
-            <CardContent>
-              <h3 className="text-white font-semibold mb-2">{note.title}</h3>
-              <p className="text-sm text-gray-400 mb-2">{note.timestamp}</p>
-              <p className="text-white text-sm line-clamp-3">{note.content}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {notes.map(note => (
+          <Card key={note.id} className="bg-white bg-opacity-10 backdrop-blur-lg border-none text-white">
+            <CardContent className="p-4">
+              <h2 className="text-xl font-semibold mb-2">{note.title}</h2>
+              <p className="text-sm text-gray-300 mb-2">{note.timestamp}</p>
+              <p className="text-gray-100 mb-4 line-clamp-3">{note.content}</p>
+              <Button onClick={() => openNoteDetails(note)} className="w-full bg-blue-600 hover:bg-blue-700">
+                View Details
+              </Button>
             </CardContent>
           </Card>
         ))}
