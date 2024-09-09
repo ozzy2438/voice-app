@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Mic, MicOff, Settings, History, Wand2 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 export function AppPage() {
   const [isRecording, setIsRecording] = useState(false)
@@ -118,18 +118,16 @@ export function AppPage() {
                 </motion.div>
               </div>
               <canvas ref={canvasRef} width="640" height="100" className="w-full mb-4 rounded-lg"></canvas>
-              <AnimatePresence>
-                {transcript && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="bg-white bg-opacity-20 p-4 rounded-md min-h-[200px] backdrop-blur-md"
-                  >
-                    <p className="text-white">{transcript}</p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {transcript && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="bg-white bg-opacity-20 p-4 rounded-md min-h-[200px] backdrop-blur-md"
+                >
+                  <p className="text-white">{transcript}</p>
+                </motion.div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
