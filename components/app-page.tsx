@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Mic, MicOff, Settings, History, Wand2 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export function AppPage() {
   const [isRecording, setIsRecording] = useState(false)
@@ -16,6 +16,14 @@ export function AppPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
+
+  const startVisualization = () => {
+    // startVisualization fonksiyonunun içeriği
+  }
+
+  const stopVisualization = () => {
+    // stopVisualization fonksiyonunun içeriği
+  }
 
   useEffect(() => {
     if (isRecording) {
@@ -73,88 +81,6 @@ export function AppPage() {
       setPastTranscripts(prev => [...prev, data.transcript])
     } catch (error) {
       console.error('Error sending audio to server:', error)
-    }
-  }
-
-  const startVisualization = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    if (!audioContext) {
-      const newAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-      setAudioContext(newAudioContext)
-      analyserRef.current = newAudioContext.createAnalyser()
-    }
-
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(stream => {
-        if (audioContext && analyserRef.current) {
-          const source = audioContext.createMediaStreamSource(stream)
-          source.connect(analyserRef.current)
-          visualize()
-        }
-      })
-
-    function visualize() {
-      if (!canvas) return;
-      const WIDTH = canvas.width
-      const HEIGHT = canvas.height
-
-      if (analyserRef.current) {
-        analyserRef.current.fftSize = 256
-        const bufferLength = analyserRef.current.frequencyBinCount
-        const dataArray = new Uint8Array(bufferLength)
-
-        ctx.clearRect(0, 0, WIDTH, HEIGHT)
-
-        function draw() {
-          if (!isRecording || !ctx) return;
-          requestAnimationFrame(draw);
-
-          analyserRef.current?.getByteFrequencyData(dataArray)
-
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'
-          ctx.fillRect(0, 0, WIDTH, HEIGHT)
-
-          const barWidth = (WIDTH / bufferLength) * 2.5
-          let barHeight
-          let x = 0
-
-          for (let i = 0; i < bufferLength; i++) {
-            barHeight = dataArray[i] / 2
-
-            const hue = (i / bufferLength) * 360
-            ctx.fillStyle = `hsl(${hue}, 100%, 50%)`
-            ctx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight)
-
-            x += barWidth + 1
-          }
-        }
-
-        draw()
-      }
-    }
-
-    // ... geri kalan startVisualization kodu ...
-  }
-
-  const stopVisualization = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-    if (audioContext) {
-      audioContext.close().then(() => {
-        setAudioContext(null)
-        analyserRef.current = null
-      })
     }
   }
 
